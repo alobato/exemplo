@@ -1,6 +1,6 @@
 require "bundler/capistrano"
 
-server "66.228.61.24", :web, :app, :db, primary: true
+server "74.117.57.166", :web, :app, :db, primary: true
 
 set :application, "exemplo"
 set :user, "deployer"
@@ -35,11 +35,23 @@ namespace :deploy do
     run "cd #{latest_release} && #{rake} RAILS_ENV=#{rails_env} db:create"
   end
 
+  desc "Remove nginx default site"
+  task :remove_nginx_default_site, roles: :app do
+    sudo "rm /etc/nginx/sites-enabled/default"
+  end
+
+  desc "Autostart unicorn"
+  task :autostart_unicorn, roles: :app do
+    sudo "update-rc.d unicorn_#{application} defaults"
+  end
+
   task :cold do # Overriding the default deploy:cold (http://stackoverflow.com/questions/1329778/dbschemaload-vs-dbmigrate-with-capistrano)
     update
     create_db
     migrate
     start
+    remove_nginx_default_site
+    autostart_unicorn
   end
 
   %w[start stop restart].each do |command|
