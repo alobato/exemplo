@@ -52,6 +52,7 @@ namespace :deploy do
     start
     remove_nginx_default_site
     autostart_unicorn
+    restart_nginx
   end
 
   %w[start stop restart].each do |command|
